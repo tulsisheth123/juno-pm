@@ -31,6 +31,9 @@ This repo is my final project for the **AI Product Management Certification**. E
 - **Agent Workflow Spec (AWSpec)** — [`05-agentic-workflows/awspec.md`](05-agentic-workflows/awspec.md)
 - **Agent Control Panel** — [`05-agentic-workflows/agent-control-panel.md`](05-agentic-workflows/agent-control-panel.md)
 
+### Prototype
+- **Juno Dashboard** — [`07-dashboard/index.html`](07-dashboard/index.html) · transcripts → insights → draft PRD ([notes](07-dashboard/README.md))
+
 ### M6 · Evals & Guardrails
 - **Eval stack** — [`06-evals/eval-stack.md`](06-evals/eval-stack.md)
 - **Human evaluation rubric** — [`06-evals/human-rubric.md`](06-evals/human-rubric.md)
@@ -83,9 +86,12 @@ juno-pm/
 ├── 05-agentic-workflows/
 │   ├── awspec.md                      ← M5: Agent Workflow Spec
 │   └── agent-control-panel.md         ← M5: Agent Control Panel
-└── 06-evals/
-    ├── eval-stack.md                  ← M6: layered eval stack
-    └── human-rubric.md                ← M6: human evaluation rubric
+├── 06-evals/
+│   ├── eval-stack.md                  ← M6: layered eval stack
+│   └── human-rubric.md                ← M6: human evaluation rubric
+└── 07-dashboard/
+    ├── index.html                     ← dark-mode dashboard (open directly)
+    └── app.js                         ← pipeline, insight clustering, markdown render
 ```
 
 ---
