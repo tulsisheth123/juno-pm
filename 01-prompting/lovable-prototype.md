@@ -2,7 +2,7 @@
 
 ## Prototype link
 
-https://lovable.dev/projects/4f82ac55-3a06-4bdc-9578-8a33e86cd6a3
+https://juno-pm-proto.lovable.app/
 
 ## What it demonstrates
 
