@@ -541,15 +541,32 @@ el.clearBtn.addEventListener('click', () => {
   el.input.focus();
 });
 
+/** navigator.clipboard is unavailable on file:// and in sandboxed frames,
+ *  so fall back to a selected off-screen textarea before giving up. */
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch { /* fall through */ }
+
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.cssText = 'position:fixed;top:0;left:-9999px;opacity:0';
+  document.body.appendChild(ta);
+  ta.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch { ok = false; }
+  ta.remove();
+  return ok;
+}
+
 el.copyBtn.addEventListener('click', async () => {
   if (!state.markdown) return;
-  try {
-    await navigator.clipboard.writeText(state.markdown);
-    el.copyBtn.textContent = 'Copied';
-  } catch {
-    el.copyBtn.textContent = 'Copy failed';
-  }
-  setTimeout(() => { el.copyBtn.textContent = 'Copy markdown'; }, 1600);
+  el.copyBtn.textContent = (await copyText(state.markdown))
+    ? 'Copied'
+    : 'Press ⌘C to copy';
+  setTimeout(() => { el.copyBtn.textContent = 'Copy markdown'; }, 1800);
 });
 
 document.addEventListener('keydown', (e) => {
