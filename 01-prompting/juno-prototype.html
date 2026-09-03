@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Juno PM — Strategy-Aligned PRD Drafts</title>
+<style>
+  :root{
+    --bg:#09090b; --panel:#121216; --panel-2:#17171c; --line:#26262e;
+    --txt:#e8e8ee; --muted:#9a9aa8; --faint:#6d6d7c;
+    --accent:#7c6cf0; --accent-2:#a78bfa;
+    --p0:#f87171; --p1:#e0b155; --p2:#60a5fa; --p3:#7d7d8c;
+    --ok:#4ade80; --warn:#fbbf24;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--sans);
+       font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2)}
+
+  /* ---------- header ---------- */
+  header{position:sticky;top:0;z-index:10;background:rgba(9,9,11,.88);
+         backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .bar{max-width:1320px;margin:0 auto;padding:14px 22px;display:flex;
+       align-items:center;gap:14px;flex-wrap:wrap}
+  .brand{display:flex;align-items:baseline;gap:9px;font-weight:650;font-size:16px}
+  .brand .slash{color:var(--faint);font-weight:400}
+  .brand .sub{color:var(--muted);font-weight:400;font-size:13px}
+  .status{margin-left:auto;display:flex;align-items:center;gap:8px;
+          font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--faint);flex:none}
+  .dot.busy{background:var(--warn);animation:pulse 1s infinite}
+  .dot.done{background:var(--ok)}
+  @keyframes pulse{50%{opacity:.25}}
+
+  /* ---------- scenarios ---------- */
+  .scenarios{max-width:1320px;margin:0 auto;padding:16px 22px 0;
+             display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .scenarios .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.09em;
+                  text-transform:uppercase;color:var(--faint);margin-right:2px}
+  .chip{background:var(--panel);border:1px solid var(--line);color:var(--txt);
+        padding:8px 13px;border-radius:8px;font-size:13px;cursor:pointer;
+        transition:.15s;font-family:inherit;text-align:left}
+  .chip:hover{border-color:#3d3d4a;background:var(--panel-2)}
+  .chip.active{border-color:var(--accent);background:rgba(124,108,240,.13);
+               color:#cfc7ff}
+  .chip b{font-weight:600}
+  .chip span{color:var(--faint);font-size:11.5px;display:block;margin-top:1px}
+  .chip.active span{color:#9b8fe0}
+
+  /* ---------- layout ---------- */
+  .wrap{max-width:1320px;margin:0 auto;padding:18px 22px 60px;
+        display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:18px;
+        align-items:start}
+  @media (max-width:960px){.wrap{grid-template-columns:1fr}}
+  .col{display:flex;flex-direction:column;gap:16px;min-width:0}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+        overflow:hidden}
+  .card-hd{display:flex;align-items:center;gap:9px;padding:12px 16px;
+           border-bottom:1px solid var(--line);background:var(--panel-2)}
+  .card-hd h2{margin:0;font-size:13.5px;font-weight:600;letter-spacing:.01em}
+  .card-hd .meta{margin-left:auto;font-family:var(--mono);font-size:11.5px;
+                 color:var(--faint)}
+  .ico{width:15px;height:15px;flex:none;stroke:var(--accent-2);fill:none;
+       stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .card-bd{padding:14px 16px}
+
+  textarea{width:100%;background:#0d0d10;color:var(--txt);border:1px solid var(--line);
+           border-radius:8px;padding:11px 12px;font-family:var(--mono);
+           font-size:12.5px;line-height:1.65;resize:vertical;outline:none}
+  textarea:focus{border-color:#3f3a68}
+  textarea::placeholder{color:var(--faint)}
+  .empty-note{color:var(--faint);font-family:var(--mono);font-size:12px;
+              padding:10px 0 2px}
+
+  .run{width:100%;padding:12px;border:0;border-radius:10px;cursor:pointer;
+       background:linear-gradient(135deg,var(--accent),#6d5ce0);color:#fff;
+       font-size:14px;font-weight:600;font-family:inherit;
+       display:flex;align-items:center;justify-content:center;gap:9px;
+       transition:.15s}
+  .run:hover{filter:brightness(1.12)}
+  .run:disabled{opacity:.55;cursor:not-allowed}
+
+  /* ---------- insights ---------- */
+  .placeholder{color:var(--faint);font-size:13px;padding:26px 4px;text-align:center}
+  .insight{border:1px solid var(--line);border-radius:10px;padding:13px 14px;
+           margin-bottom:11px;background:#0f0f13}
+  .insight:last-child{margin-bottom:0}
+  .i-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:7px}
+  .i-title{font-weight:600;font-size:13.5px;flex:1;line-height:1.4}
+  .badge{font-family:var(--mono);font-size:11px;font-weight:600;padding:2px 8px;
+         border-radius:999px;border:1px solid;flex:none;letter-spacing:.03em}
+  .b-P0{color:var(--p0);border-color:rgba(248,113,113,.42);background:rgba(248,113,113,.1)}
+  .b-P1{color:var(--p1);border-color:rgba(224,177,85,.42);background:rgba(224,177,85,.1)}
+  .b-P2{color:var(--p2);border-color:rgba(96,165,250,.42);background:rgba(96,165,250,.1)}
+  .b-P3{color:var(--p3);border-color:#3a3a46;background:#1b1b21}
+  .i-body{color:#c9c9d6;font-size:13px;margin-bottom:9px}
+  .i-tags{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px;
+          font-family:var(--mono);font-size:11px}
+  .tag{padding:2px 8px;border-radius:5px;background:#1b1b22;color:var(--muted);
+       border:1px solid var(--line)}
+  .tag.score{color:var(--accent-2);border-color:rgba(167,139,250,.3)}
+  .i-note{font-size:12.2px;color:var(--muted);border-left:2px solid #2f2f3a;
+          padding-left:10px;margin-bottom:9px}
+  .quote{font-size:12.5px;color:#a9a9ba;font-style:italic;
+         background:#131318;border:1px solid var(--line);border-radius:7px;
+         padding:8px 11px}
+
+  /* ---------- guardrail banner ---------- */
+  .guard{border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12.8px;
+         line-height:1.6;display:flex;gap:10px;align-items:flex-start}
+  .guard .g-ico{flex:none;font-size:14px;line-height:1.3}
+  .guard b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+           text-transform:uppercase;margin-bottom:4px}
+  .g-warn{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.32);color:#e3cb96}
+  .g-warn b{color:var(--warn)}
+  .g-ok{background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.3);color:#a8d9b9}
+  .g-ok b{color:var(--ok)}
+  .g-stop{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.34);color:#e0aeae}
+  .g-stop b{color:var(--p0)}
+
+  /* ---------- PRD ---------- */
+  .prd{font-size:13.2px;line-height:1.68;color:#d3d3de;max-height:640px;
+       overflow-y:auto;padding-right:4px}
+  .prd h3{font-size:15px;margin:0 0 10px;color:#fff;font-weight:650}
+  .prd h4{font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+          text-transform:uppercase;color:var(--faint);margin:20px 0 8px;
+          border-top:1px solid var(--line);padding-top:14px}
+  .prd h5{font-size:13.5px;margin:16px 0 6px;color:#fff;font-weight:600}
+  .prd p{margin:0 0 9px}
+  .prd ul{margin:0 0 10px;padding-left:18px}
+  .prd li{margin-bottom:4px}
+  .prd em{color:#b8b8c8}
+  .prd strong{color:#fff}
+  .prd::-webkit-scrollbar{width:8px}
+  .prd::-webkit-scrollbar-thumb{background:#2a2a34;border-radius:4px}
+
+  footer{max-width:1320px;margin:0 auto;padding:0 22px 40px;color:var(--faint);
+         font-size:12px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <div class="brand">Juno PM <span class="slash">/</span> <span class="sub">Opportunity Brief</span></div>
+    <div class="status"><span class="dot" id="dot"></span><span id="statusTxt">Idle</span></div>
+  </div>
+</header>
+
+<div class="scenarios">
+  <span class="lbl">Scenarios</span>
+  <button class="chip" data-s="0"><b>① Transcript only</b><span>No strategy doc loaded</span></button>
+  <button class="chip" data-s="1"><b>② Transcript + strategy</b><span>Strategy-aligned mode</span></button>
+  <button class="chip" data-s="2"><b>③ Solution-first input</b><span>Guardrail test</span></button>
+</div>
+
+<div class="wrap">
+  <!-- LEFT -->
+  <div class="col">
+    <div class="card">
+      <div class="card-hd">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        <h2>Strategy Document</h2>
+        <span class="meta" id="stratCount">0 words</span>
+      </div>
+      <div class="card-bd">
+        <textarea id="strategy" rows="7" placeholder="Paste the organizational strategy doc here — or leave empty to see how Juno degrades safely."></textarea>
+        <div class="empty-note" id="stratNote">No strategy document loaded</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <h2>Raw User Transcripts</h2>
+        <span class="meta" id="transCount">0 words</span>
+      </div>
+      <div class="card-bd">
+        <textarea id="transcript" rows="12"></textarea>
+      </div>
+    </div>
+
+    <button class="run" id="run">
+      <svg class="ico" style="stroke:#fff" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
+      Process Transcript
+    </button>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="col">
+    <div class="card">
+      <div class="card-hd">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+        <h2>Structured Insights</h2>
+        <span class="meta" id="insightMeta">—</span>
+      </div>
+      <div class="card-bd" id="insights">
+        <div class="placeholder">Run <strong>Process Transcript</strong> to extract prioritized insights.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/></svg>
+        <h2>Draft PRD</h2>
+        <span class="meta" id="prdMeta">—</span>
+      </div>
+      <div class="card-bd">
+        <div class="prd" id="prd"><div class="placeholder">Your generated PRD preview will appear here.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>Static prototype · pre-baked scenario responses · no live model calls</footer>
+
+<script>
+/* ============================================================
+   Pre-baked scenarios. No API keys, no network calls — the
+   "model output" below is canned and swapped by the buttons.
+   ============================================================ */
+
+const TRANSCRIPT_BASE =
+`[Ops lead] "Every Monday I copy notes from three calls into a doc by hand. It takes an hour."
+[PM] "I like the summaries, but I can never tell which issue matters most."
+[Designer] "Export is fine. I just wish I could share a link instead of a PDF."
+[Researcher] "Half the time I can't find the research we did last quarter."`;
+
+const STRATEGY_DOC =
+`JUNO FY26 OPERATING STRATEGY (excerpt)
+
+Pillar 1 — Time-to-Insight
+Cut the manual work between a customer conversation and a decision.
+Target: median 60 min -> under 5 min by Q4.
+
+Pillar 2 — Institutional Memory
+Every research artifact discoverable by any team member within 30 seconds.
+
+Pillar 3 — Enterprise Readiness
+SOC 2 controls, permissioned access, auditable exports.
+
+EXPLICIT NON-GOALS FY26
+- Public / unauthenticated sharing surfaces
+- Consumer-style collaboration features
+- Net-new summarization quality work (already at parity)`;
+
+const TRANSCRIPT_ANTI =
+`[Stakeholder] "Just add AI to the dashboard. Everyone's doing it."
+[Sales] "Can we ship a Slack integration this sprint? A prospect asked."
+[Exec] "Make the app faster and more modern looking."`;
+
+const SCENARIOS = [
+/* ---------------- 0: no strategy doc ---------------- */
+{
+  strategy: "",
+  transcript: TRANSCRIPT_BASE,
+  status: "4 insights · Quality Mode",
+  insightMeta: "4 items",
+  prdMeta: "Opportunity Brief",
+  guard: {cls:"g-warn", ico:"⚠️", title:"Quality-based prioritization",
+    body:"No strategy document was provided. Priorities below reflect <strong>request quality signals</strong> — problem clarity, evidence quality, requirement specificity, absence of anti-patterns — <strong>not</strong> business or strategic alignment. Treat ranking as provisional."},
+  insights:[
+    {p:"P1",t:"Automated multi-call note aggregation",
+     b:"Automate consolidation of call notes to eliminate the manual, repetitive one-hour weekly task of copying notes from multiple calls into a single document.",
+     tags:["Efficiency","negative sentiment"],score:"94/100 quality",
+     n:"Strong problem clarity with a concrete time cost (1 hr/week) and direct workflow evidence. Without a strategy document, priority reflects request quality, not strategic alignment.",
+     q:"Every Monday I copy notes from three calls into a doc by hand. It takes an hour."},
+    {p:"P1",t:"Historical research search and discoverability",
+     b:"Improve research asset discoverability, archival search, and indexing so team members can reliably locate prior findings.",
+     tags:["Efficiency","negative sentiment"],score:"87/100 quality",
+     n:"Clear problem statement with a high reported failure rate (~50%) in information retrieval. Without a strategy document, priority reflects request quality, not strategic alignment.",
+     q:"Half the time I can't find the research we did last quarter."},
+    {p:"P1",t:"Issue prioritization and importance ranking in summaries",
+     b:"Introduce visual hierarchy, severity scoring, or priority ranking within generated summaries so PMs can immediately discern the highest-impact issues.",
+     tags:["User Experience","neutral sentiment"],score:"85/100 quality",
+     n:"Clear pain point about summary actionability and missing importance weighting. Without a strategy document, priority reflects request quality, not strategic alignment.",
+     q:"I like the summaries, but I can never tell which issue matters most."},
+    {p:"P1",t:"Shareable web link generation for exports",
+     b:"Enable shareable web links for exported artifacts to replace static PDF distribution.",
+     tags:["User Experience","neutral sentiment"],score:"80/100 quality",
+     n:"Specific workflow friction around asset distribution and collaboration format. Without a strategy document, priority reflects request quality, not strategic alignment.",
+     q:"Export is fine. I just wish I could share a link instead of a PDF."}
+  ],
+  prd:`<h3>Opportunity Brief: User Feedback Quality Analysis</h3>
+<h4>Executive summary</h4>
+<p>Four distinct inputs from Operations, Product Management, Design, and Research. Each was scored on the rigor of the stated user problem and the presence of verifiable evidence. <em>All four clear the quality bar; none can be ranked against business impact until a strategy document is supplied.</em></p>
+<h4>High-quality requests · P1 (score 80–100)</h4>
+<h5>1. Automated multi-call note aggregation — 94/100</h5>
+<ul>
+<li><strong>Pillar:</strong> Efficiency</li>
+<li><strong>Problem:</strong> Ops leads spend ~1 hour every Monday manually copying notes from three calls into a unified document.</li>
+<li><strong>Evidence:</strong> <em>"Every Monday I copy notes from three calls into a doc by hand. It takes an hour."</em></li>
+<li><strong>Approach:</strong> Multi-meeting rollup; automated consolidation into a single doc.</li>
+</ul>
+<h5>2. Historical research search and discoverability — 87/100</h5>
+<ul>
+<li><strong>Pillar:</strong> Efficiency</li>
+<li><strong>Problem:</strong> ~50% failure rate retrieving prior-quarter research artifacts.</li>
+<li><strong>Evidence:</strong> <em>"Half the time I can't find the research we did last quarter."</em></li>
+<li><strong>Approach:</strong> Global indexing, search filtering, time- and tag-based archival discovery.</li>
+</ul>
+<h5>3. Issue prioritization and importance ranking — 85/100</h5>
+<ul>
+<li><strong>Pillar:</strong> User Experience</li>
+<li><strong>Problem:</strong> Summaries lack hierarchy, so PMs cannot quickly identify critical issues.</li>
+<li><strong>Evidence:</strong> <em>"I like the summaries, but I can never tell which issue matters most."</em></li>
+<li><strong>Approach:</strong> Priority badges, impact weighting, top-issue synthesis above the fold.</li>
+</ul>
+<h5>4. Shareable web link generation for exports — 80/100</h5>
+<ul>
+<li><strong>Pillar:</strong> User Experience</li>
+<li><strong>Problem:</strong> Collaboration is limited to PDF export, slowing sharing workflows.</li>
+<li><strong>Evidence:</strong> <em>"Export is fine. I just wish I could share a link instead of a PDF."</em></li>
+<li><strong>Approach:</strong> Web-accessible share links with configurable view/comment permissions.</li>
+</ul>
+<h4>Open dependency</h4>
+<p>Supply the FY26 strategy document to convert these quality scores into strategic priorities. Expect the ranking to change.</p>`
+},
+
+/* ---------------- 1: with strategy doc ---------------- */
+{
+  strategy: STRATEGY_DOC,
+  transcript: TRANSCRIPT_BASE,
+  status: "4 insights · Strategy-Aligned Mode",
+  insightMeta: "4 items · 1 non-goal",
+  prdMeta: "Opportunity Brief",
+  guard: {cls:"g-ok", ico:"✅", title:"Strategy-aligned prioritization",
+    body:"Scored against <strong>Juno FY26 Operating Strategy</strong>. Priorities now reflect business alignment, not request quality. One request maps to a documented non-goal and has been demoted with the reason stated — it was not silently dropped."},
+  insights:[
+    {p:"P0",t:"Automated multi-call note aggregation",
+     b:"Automate consolidation of notes across calls into a single reviewed document, with the summary produced inside the meeting workflow rather than after it.",
+     tags:["Pillar 1 · Time-to-Insight","negative sentiment"],score:"96/100 alignment",
+     n:"Directly serves the only quantified goal in the strategy (60 min → under 5 min by Q4). The observed 1 hr/week is the exact cost the pillar exists to remove. Highest alignment of any input.",
+     q:"Every Monday I copy notes from three calls into a doc by hand. It takes an hour."},
+    {p:"P0",t:"Historical research search and discoverability",
+     b:"Index every research artifact and add time-, owner-, and tag-based retrieval with a 30-second findability target.",
+     tags:["Pillar 2 · Institutional Memory","negative sentiment"],score:"91/100 alignment",
+     n:"Pillar 2 states a 30-second findability target; the transcript reports ~50% retrieval failure. The gap between stated target and observed behavior is the strongest evidence in this batch.",
+     q:"Half the time I can't find the research we did last quarter."},
+    {p:"P2",t:"Issue prioritization and importance ranking in summaries",
+     b:"Add priority weighting and top-issue synthesis to generated summaries.",
+     tags:["No pillar match","neutral sentiment"],score:"44/100 alignment",
+     n:"Real usability gap, but the strategy lists summarization quality as an explicit non-goal (&quot;already at parity&quot;). Demoted rather than dropped: revisit if Pillar 1 instrumentation shows ranking blocks time-to-decision.",
+     q:"I like the summaries, but I can never tell which issue matters most."},
+    {p:"P3",t:"Shareable web link generation for exports",
+     b:"Public or unauthenticated share links for exported artifacts.",
+     tags:["Conflicts with non-goal","neutral sentiment"],score:"12/100 alignment",
+     n:"Conflicts with two strategy statements at once: the FY26 non-goal on public sharing surfaces, and Pillar 3's requirement for permissioned, auditable access. Not rejected as a user need — a permissioned internal link is the version that would qualify. Needs an explicit exec decision, not a PM judgment call.",
+     q:"Export is fine. I just wish I could share a link instead of a PDF."}
+  ],
+  prd:`<h3>Opportunity Brief: FY26 Strategy-Aligned Feedback Synthesis</h3>
+<h4>Executive summary</h4>
+<p>The same four inputs, re-ranked against the FY26 Operating Strategy. <strong>Two rose to P0, two fell.</strong> The change is entirely driven by the strategy document — request quality did not change between runs, which is the point of the comparison.</p>
+<h4>Ranking delta vs. quality-only run</h4>
+<ul>
+<li>Note aggregation: P1 → <strong>P0</strong> (serves the only quantified goal in the strategy)</li>
+<li>Research discoverability: P1 → <strong>P0</strong> (Pillar 2 names a 30-second target)</li>
+<li>Summary ranking: P1 → <strong>P2</strong> (summarization quality is a stated non-goal)</li>
+<li>Shareable links: P1 → <strong>P3</strong> (conflicts with the public-sharing non-goal)</li>
+</ul>
+<h4>Commit now · P0</h4>
+<h5>1. Automated multi-call note aggregation</h5>
+<ul>
+<li><strong>Pillar:</strong> 1 — Time-to-Insight</li>
+<li><strong>Problem:</strong> Ops leads spend ~1 hr/week reassembling notes from three calls by hand.</li>
+<li><strong>Success metric:</strong> Median conversation-to-decision time under 5 minutes by Q4 (strategy target). Leading indicator: manual consolidation events per user per week trending to zero.</li>
+<li><strong>Approach:</strong> Rollup across selected meetings; draft doc generated in-session; human edit before it is treated as source of truth.</li>
+<li><strong>Risk:</strong> Aggregation across calls with different participants may cross permission boundaries — gate on Pillar 3 access controls.</li>
+</ul>
+<h5>2. Historical research search and discoverability</h5>
+<ul>
+<li><strong>Pillar:</strong> 2 — Institutional Memory</li>
+<li><strong>Problem:</strong> ~50% failure rate retrieving prior-quarter research.</li>
+<li><strong>Success metric:</strong> 95th-percentile time-to-find under 30 seconds; retrieval failure rate under 5%.</li>
+<li><strong>Approach:</strong> Global index, tag and owner filters, recency-weighted ranking, saved searches.</li>
+</ul>
+<h4>Deferred with reason · P2–P3</h4>
+<h5>3. Issue prioritization in summaries — P2</h5>
+<p>Legitimate usability gap, but the strategy classes summarization quality as at parity and out of scope for FY26. <strong>Revisit trigger:</strong> if Pillar 1 instrumentation shows unranked summaries measurably extend time-to-decision, this converts to a P1 with evidence attached.</p>
+<h5>4. Shareable web links — P3, blocked pending decision</h5>
+<p>Conflicts with the FY26 non-goal on public sharing surfaces and with Pillar 3's permissioned-access requirement. The underlying need is real; the requested implementation is out of bounds. <strong>Recommended reframe:</strong> permissioned internal share link with audit logging — that version serves the user and satisfies Pillar 3. <strong>Escalate:</strong> requires an explicit exec ruling on the non-goal, not a PM override.</p>
+<h4>Not inferred</h4>
+<p>Segment size, revenue exposure, and engineering cost are absent from both the transcript and the strategy document. They are not estimated here. Sequencing between the two P0s should not be finalized without them.</p>`
+},
+
+/* ---------------- 2: anti-pattern guardrail ---------------- */
+{
+  strategy: STRATEGY_DOC,
+  transcript: TRANSCRIPT_ANTI,
+  status: "0 insights · Guardrail triggered",
+  insightMeta: "0 items · 3 rejected",
+  prdMeta: "Blocked",
+  guard: {cls:"g-stop", ico:"⛔", title:"Insufficient evidence — PRD not drafted",
+    body:"All three inputs are <strong>solution-first requests with no stated user problem</strong>. Juno will not manufacture a problem statement, a user segment, or a success metric that no one said. Nothing below is a PRD — it is the specific evidence needed before one can be written."},
+  insights:[
+    {p:"P3",t:"Rejected: &quot;Just add AI to the dashboard&quot;",
+     b:"Solution named, problem absent. No user, no task, no failure mode, no measure of success.",
+     tags:["Anti-pattern · solution-first","no evidence"],score:"blocked",
+     n:"Ask the requester: which decision on the dashboard is currently hard to make, who makes it, how often, and what they do today instead? Peer pressure (&quot;everyone's doing it&quot;) is not a user problem and is not scored.",
+     q:"Just add AI to the dashboard. Everyone's doing it."},
+    {p:"P3",t:"Rejected: Slack integration this sprint",
+     b:"Single-prospect request escalated to roadmap commitment without validation across the customer base.",
+     tags:["Anti-pattern · n=1","no evidence"],score:"blocked",
+     n:"Ask: what does the prospect do in Slack that Juno breaks today? Does that pattern appear in existing accounts? Is the ask deal-blocking or preference? One unnamed prospect is not a segment, and sprint timing is not a prioritization input.",
+     q:"Can we ship a Slack integration this sprint? A prospect asked."},
+    {p:"P3",t:"Rejected: &quot;Faster and more modern looking&quot;",
+     b:"Two unfalsifiable requests bundled together. Neither has a baseline, a target, or a named surface.",
+     tags:["Anti-pattern · unfalsifiable","no evidence"],score:"blocked",
+     n:"Split them. For speed: which screen, at what percentile latency today, and what would be acceptable? For appearance: what is a user unable to do because of the current design? Absent that, this is taste, and taste is not prioritized against a strategy document.",
+     q:"Make the app faster and more modern looking."}
+  ],
+  prd:`<h3>No brief generated</h3>
+<p>Three inputs, zero usable problem statements. Drafting a PRD from these would require inventing the user, the problem, and the metric — so Juno stops here instead.</p>
+<h4>Why this guardrail exists</h4>
+<p>A model asked to "write a PRD" from a solution-first request will comply. It will produce a confident document with a fabricated user segment and an invented success metric, and that document will read as evidence to everyone downstream who did not see the original input. Refusing is the correct output.</p>
+<h4>What is needed to unblock</h4>
+<ul>
+<li><strong>Dashboard / AI:</strong> the decision users are trying to make, its frequency, and today's workaround.</li>
+<li><strong>Slack:</strong> the broken workflow behind the request, and whether it recurs across accounts or stops at one prospect.</li>
+<li><strong>Speed and design:</strong> a named surface, a current baseline, and a target — separately, not bundled.</li>
+</ul>
+<h4>Strategy note</h4>
+<p>Even fully specified, none of these three map cleanly to an FY26 pillar. They would compete for the same capacity as the two P0s in Scenario ②, and that trade-off should be made explicitly rather than by arrival order.</p>`
+}
+];
+
+/* ---------------- wiring ---------------- */
+const $ = id => document.getElementById(id);
+const words = s => s.trim() ? s.trim().split(/\s+/).length : 0;
+
+function syncCounts(){
+  const st = $('strategy').value, tr = $('transcript').value;
+  $('stratCount').textContent = words(st) + ' words';
+  $('transCount').textContent = words(tr) + ' words';
+  $('stratNote').textContent = words(st)
+    ? 'Strategy document loaded — prioritization will be strategy-aligned'
+    : 'No strategy document loaded';
+  $('stratNote').style.color = words(st) ? 'var(--ok)' : 'var(--faint)';
+}
+$('strategy').addEventListener('input', syncCounts);
+$('transcript').addEventListener('input', syncCounts);
+
+let current = 0;
+function loadScenario(i){
+  current = i;
+  document.querySelectorAll('.chip').forEach(c =>
+    c.classList.toggle('active', +c.dataset.s === i));
+  $('strategy').value = SCENARIOS[i].strategy;
+  $('transcript').value = SCENARIOS[i].transcript;
+  syncCounts();
+  $('insights').innerHTML = '<div class="placeholder">Run <strong>Process Transcript</strong> to extract prioritized insights.</div>';
+  $('prd').innerHTML = '<div class="placeholder">Your generated PRD preview will appear here.</div>';
+  $('insightMeta').textContent = '—';
+  $('prdMeta').textContent = '—';
+  setStatus('Idle','');
+}
+document.querySelectorAll('.chip').forEach(c =>
+  c.addEventListener('click', () => loadScenario(+c.dataset.s)));
+
+function setStatus(txt, cls){
+  $('statusTxt').textContent = txt;
+  $('dot').className = 'dot' + (cls ? ' ' + cls : '');
+}
+
+function guardHTML(g){
+  return `<div class="guard ${g.cls}"><span class="g-ico">${g.ico}</span>
+    <div><b>${g.title}</b>${g.body}</div></div>`;
+}
+function insightHTML(x){
+  return `<div class="insight">
+    <div class="i-top"><div class="i-title">${x.t}</div>
+      <span class="badge b-${x.p}">${x.p}</span></div>
+    <div class="i-body">${x.b}</div>
+    <div class="i-tags">${x.tags.map(t=>`<span class="tag">${t}</span>`).join('')}
+      <span class="tag score">${x.score}</span></div>
+    <div class="i-note">${x.n}</div>
+    <div class="quote">“${x.q}”</div>
+  </div>`;
+}
+
+const STEPS = ['Parsing transcript…','Checking strategy context…','Scoring & prioritizing…','Drafting brief…'];
+
+$('run').addEventListener('click', () => {
+  const s = SCENARIOS[current];
+  const btn = $('run');
+  btn.disabled = true;
+  $('insights').innerHTML = '<div class="placeholder">Processing…</div>';
+  $('prd').innerHTML = '<div class="placeholder">Processing…</div>';
+  $('insightMeta').textContent = '—';
+  $('prdMeta').textContent = '—';
+
+  let step = 0;
+  setStatus(STEPS[0], 'busy');
+  const timer = setInterval(() => {
+    step++;
+    if (step < STEPS.length) setStatus(STEPS[step], 'busy');
+  }, 550);
+
+  setTimeout(() => {
+    clearInterval(timer);
+    $('insights').innerHTML = guardHTML(s.guard) + s.insights.map(insightHTML).join('');
+    $('prd').innerHTML = s.prd;
+    $('insightMeta').textContent = s.insightMeta;
+    $('prdMeta').textContent = s.prdMeta;
+    setStatus(s.status, 'done');
+    btn.disabled = false;
+  }, 2400);
+});
+
+loadScenario(0);
+</script>
+</body>
+</html>
