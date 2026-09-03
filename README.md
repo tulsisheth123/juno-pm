@@ -4,7 +4,7 @@
 
 _Jane Doe · AI PM Cohort · May 2026_
 
-Repo: https://github.com/your-handle/juno-pm
+Repo: https://github.com/tulsisheth123/juno-pm
 
 This repo is my final project for the AI Product Management Certification — **Juno PM**. Each module’s artefact lives in its own folder; this README is the dashboard and the pitch.
 
